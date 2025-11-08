@@ -1,0 +1,18 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging into ECR...
+      - AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - REPO_URI="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/2048-game"
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPO_URI
+  build:
+    commands:
+      - echo Building Docker image...
+      - docker build -t 2048-game .
+      - docker tag 2048-game:latest $REPO_URI:latest
+  post_build:
+    commands:
+      - echo Pushing image to ECR...
+      - docker push $REPO_URI:latest
