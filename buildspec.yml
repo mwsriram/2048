@@ -5,7 +5,7 @@ phases:
     commands:
       - echo Logging in to Amazon ECR...
       - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-      - REGION=ap-south-1           # change if different
+      - REGION=us-east-1           # change if different
       - REPO_URI=$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/2048-game
       - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $REPO_URI
   build:
