@@ -1,13 +1,6 @@
-# Use a small, production-ready web server
+# Use a lightweight web server (Nginx)
 FROM nginx:alpine
-
-# Remove default nginx static content
-RUN rm -rf /usr/share/nginx/html/*
-
-# Copy your site into Nginx's web root
+# Copy your game files into the web root
 COPY . /usr/share/nginx/html
-
-# Expose port 80 for HTTP
+# The game will be served on port 80
 EXPOSE 80
-
-# Nginx starts automatically via the base image's CMD
