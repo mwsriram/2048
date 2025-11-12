@@ -1,31 +1,35 @@
 pipeline {
-  agent any
-  options { skipDefaultCheckout(true) }        // we'll do our own checkout
-  triggers { pollSCM('* * * * *
-') }          // poll GitHub every ~5 minutes
+    agent any
 
-  stages {
-    stage('Checkout (master only)') {
-      when { branch 'master' }
-      steps {
-        git url: 'https://github.com/mwsriram/2048.git', branch: 'master'
-      }
+    triggers {
+        // Trigger automatically when code is pushed to GitHub (webhook required)
+        githubPush()
     }
 
-    stage('Build + Run (master only)') {
-      when { branch 'master' }
-      steps {
-        sh '''
-          echo "Building Docker image..."
-          docker build -t 2048-game .
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Fetching latest code from GitHub...'
+                git branch: 'master', url: 'git@github.com:mwsriram/2048.git', credentialsId: 'github-ssh-key'
+            }
+        }
 
-          echo "Stopping old container if exists..."
-          docker rm -f 2048-container || true
-
-          echo "Running new container..."
-          docker run -d --name 2048-container -p 80:80 2048-game
-        '''
-      }
+        stage('Build') {
+            steps {
+                echo 'Running existing Jenkins build steps...'
+                // If your Jenkins job already has a build command configured,
+                // you can trigger it here or leave this empty
+                sh './build.sh'  // optional – remove if Jenkins handles it
+            }
+        }
     }
-  }
+
+    post {
+        success {
+            echo '✅ Build successful!'
+        }
+        failure {
+            echo '❌ Build failed. Check logs for details.'
+        }
+    }
 }
